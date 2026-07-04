@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Samson Challenge Tracker</title>
+<meta name="theme-color" content="#15171B">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Samson">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+:root{
+  --bg:#15171B;--surface:#1E2127;--surface2:#262A31;--steel:#3A3F47;--line:#2C3037;
+  --ink:#ECE9E3;--muted:#9097A0;--faint:#6B7178;
+  --ember:#FF5A2B;--ember-dim:#7a2c16;--clay:#D49A4E;--clay-dim:#5e451f;
+  --warn:#E2483A;--warn-dim:#5e1f1a;--steelblue:#6E93A8;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg)}
+.st-root{max-width:520px;margin:0 auto;min-height:100vh;background:var(--bg);color:var(--ink);
+  font-family:Inter,system-ui,sans-serif;padding:0 0 60px;-webkit-font-smoothing:antialiased;padding-top:env(safe-area-inset-top)}
+.st-head{padding:22px 20px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#1b1e23,var(--bg))}
+.st-eyebrow{font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.22em;font-size:11px;color:var(--clay);font-weight:600}
+.st-headrow{display:flex;align-items:flex-end;justify-content:space-between;margin-top:8px}
+.st-countdown{display:flex;align-items:baseline;gap:8px}
+.st-cd-num{font-family:Oswald,sans-serif;font-weight:700;font-size:56px;line-height:.9;color:var(--ink);font-feature-settings:"tnum"}
+.st-cd-lbl{font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:var(--muted)}
+.st-phase{text-align:right;display:flex;flex-direction:column;gap:5px;align-items:flex-end}
+.st-week{font-size:11px;color:var(--faint);font-family:Oswald,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.st-chip{font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:600;padding:3px 9px;border-radius:2px}
+.st-phase-base{background:var(--clay-dim);color:var(--clay)}
+.st-phase-build{background:var(--ember-dim);color:var(--ember)}
+.st-phase-specific{background:#1f3b46;color:var(--steelblue)}
+.st-phase-taper{background:#33373d;color:var(--muted)}
+.st-phase-note{margin:12px 0 0;font-size:12.5px;color:var(--muted);line-height:1.45}
+.st-tabs{display:flex;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+.st-tab{flex:1;background:none;border:none;color:var(--faint);padding:13px 4px;cursor:pointer;font-family:Oswald,sans-serif;
+  text-transform:uppercase;letter-spacing:.12em;font-size:12px;border-bottom:2px solid transparent;transition:.15s}
+.st-tab.is-active{color:var(--ember);border-bottom-color:var(--ember)}
+.st-main{padding:18px 16px}
+.st-daybar{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.st-day-no{font-family:Oswald,sans-serif;font-weight:700;font-size:13px;color:var(--bg);background:var(--ember);
+  padding:8px 12px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+.st-day-title{font-family:Oswald,sans-serif;font-weight:600;font-size:21px;letter-spacing:.01em}
+.st-day-blurb{font-size:12px;color:var(--muted)}
+.st-alert{background:var(--warn-dim);border:1px solid var(--warn);color:#f2cdc8;padding:11px 13px;border-radius:4px;
+  font-size:12.5px;line-height:1.5;margin-bottom:14px}
+.st-rehab{display:flex;flex-direction:column;gap:2px;background:var(--surface);border-left:3px solid var(--steelblue);
+  padding:9px 12px;border-radius:0 4px 4px 0;margin-bottom:18px}
+.st-rehab-lbl{font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.12em;font-size:10px;color:var(--steelblue)}
+.st-rehab-list{font-size:12px;color:var(--muted)}
+.st-move{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;margin-bottom:12px}
+.st-move-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.st-move-name{font-family:Oswald,sans-serif;font-weight:600;font-size:16px;display:flex;align-items:center;gap:8px}
+.st-oh{font-family:Oswald,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;background:var(--warn-dim);
+  color:#e7a59c;padding:2px 6px;border-radius:2px;font-weight:600}
+.st-move-sub{font-size:11.5px;color:var(--faint);margin-top:2px}
+.st-state{font-family:Oswald,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;
+  padding:3px 8px;border-radius:2px;white-space:nowrap}
+.st-progress{background:var(--ember-dim);color:var(--ember)}
+.st-hold{background:#33373d;color:var(--muted)}
+.st-backoff{background:var(--warn-dim);color:var(--warn)}
+.st-base{background:var(--clay-dim);color:var(--clay)}
+.st-taper{background:#2b2e34;color:var(--steelblue)}
+.st-target{display:flex;align-items:baseline;gap:10px;margin:10px 0 4px}
+.st-target-lbl{font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--faint)}
+.st-target-val{font-family:Oswald,sans-serif;font-weight:700;font-size:24px;color:var(--clay)}
+.st-reason{font-size:11.5px;color:var(--muted);line-height:1.45;margin-bottom:12px}
+.st-inputs{display:flex;gap:12px;align-items:flex-end}
+.st-field{display:flex;flex-direction:column;gap:5px}
+.st-field>span{font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.1em;font-size:10px;color:var(--faint)}
+.st-grow{flex:1}
+.st-input{background:var(--surface2);border:1px solid var(--steel);color:var(--ink);border-radius:4px;padding:9px 10px;
+  font-size:16px;width:88px;font-family:Inter,sans-serif}
+.st-grow .st-input,.st-main>.st-field .st-input{width:100%}
+.st-input:focus{outline:none;border-color:var(--ember)}
+.st-rpe{display:flex;gap:4px}
+.st-pip{width:34px;height:38px;border:1px solid var(--steel);background:var(--surface2);color:var(--muted);border-radius:4px;
+  cursor:pointer;font-family:Oswald,sans-serif;font-size:13px;transition:.12s}
+.st-pip.is-on{background:var(--ember);border-color:var(--ember);color:var(--bg);font-weight:600}
+.st-painfield{margin-top:12px}
+.st-painpip{width:32px}
+.st-pip.is-on-pain{background:var(--warn);border-color:var(--warn);color:#fff;font-weight:600}
+.st-sessmeta{display:flex;gap:12px;margin:18px 0 14px;align-items:flex-end}
+.st-log{width:100%;background:var(--ember);color:var(--bg);border:none;border-radius:5px;padding:16px;font-family:Oswald,sans-serif;
+  text-transform:uppercase;letter-spacing:.12em;font-size:15px;font-weight:600;cursor:pointer;transition:.15s}
+.st-log:hover{background:#ff6d44}
+.st-log:active{transform:translateY(1px)}
+.st-empty,.st-set-info{color:var(--muted);font-size:13px;line-height:1.5;padding:12px 0}
+.st-hist{background:var(--surface);border:1px solid var(--line);border-radius:6px;margin-bottom:10px;overflow:hidden}
+.st-hist summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;align-items:center;gap:12px}
+.st-hist summary::-webkit-details-marker{display:none}
+.st-hist-day{font-family:Oswald,sans-serif;font-weight:700;color:var(--ember);font-size:13px}
+.st-hist-title{font-family:Oswald,sans-serif;font-size:15px;flex:1}
+.st-hist-date{font-size:11px;color:var(--faint);font-family:Oswald,sans-serif;letter-spacing:.08em}
+.st-hist-body{padding:0 14px 14px;border-top:1px solid var(--line)}
+.st-hist-meta{font-size:11px;color:var(--faint);font-family:Oswald,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:10px 0 8px}
+.st-hist-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:var(--muted)}
+.st-hist-val{color:var(--ink);font-family:Oswald,sans-serif;letter-spacing:.02em}
+.st-hist-notes{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:8px}
+.st-del{margin-top:10px;background:none;border:1px solid var(--warn-dim);color:var(--warn);padding:6px 10px;border-radius:4px;
+  font-size:11px;cursor:pointer;font-family:Oswald,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.st-eyebrow2{font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--clay);margin-bottom:12px}
+.st-evt{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.st-evt-no{font-family:Oswald,sans-serif;font-weight:700;color:var(--faint);font-size:14px;width:22px}
+.st-evt-name{font-family:Oswald,sans-serif;font-size:15px;flex:1}
+.st-evt-spec{font-size:12px;color:var(--muted);text-align:right}
+.st-fine{font-size:11.5px;color:var(--faint);line-height:1.5;margin-top:16px}
+.st-main>.st-field{margin-bottom:16px}
+.st-btnrow{display:flex;gap:10px;margin:6px 0 18px}
+.st-ghost{flex:1;background:var(--surface2);border:1px solid var(--steel);color:var(--ink);padding:12px;border-radius:5px;
+  cursor:pointer;font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.1em;font-size:12px}
+.st-reset{background:none;border:1px solid var(--warn);color:var(--warn);padding:11px;border-radius:5px;width:100%;cursor:pointer;
+  font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.1em;font-size:13px;margin-top:8px}
+.st-toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--ember);
+  color:var(--ink);padding:11px 18px;border-radius:6px;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:20;max-width:90%;text-align:center}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div id="app" class="st-root"></div>
+<input id="importFile" type="file" accept="application/json" style="display:none">
+<div id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+var STORE_KEY="samson:v1";
+var DEFAULT_RACE="2026-10-03";
+var DEFAULT_START="2026-06-22";
+
+function phaseForWeek(w){
+  if(w<=5)return{name:"Base",note:"Build the engine and grip base. Progress volume."};
+  if(w<=10)return{name:"Build",note:"Add load and distance. Push the carries hard."};
+  if(w<=14)return{name:"Specific",note:"Race pace. Run fuller medleys, sharpen transitions."};
+  return{name:"Taper",note:"Hold loads, cut volume ~50%. Arrive fresh, not fried."};
+}
+
+var PROGRAM={
+  1:{title:"Power & Strength",blurb:"Heavy, low overhead demand.",
+    moves:[
+      {key:"tire",name:"Tire Flips",sub:"event tire · quality reps",load:"171 lb",metric:"reps",unit:"flips",base:8,step:1,fixed:""},
+      {key:"kbswing",name:"KB Swing (2-hand)",sub:"× 15 × 3 sets",metric:"load",unit:"lb",base:53,step:8,fixed:"× 15 × 3"},
+      {key:"sled",name:"Heavy Sled Pull",sub:"50 m · hand-over-hand",metric:"load",unit:"lb",base:90,step:10,fixed:"× 50 m"},
+      {key:"hinge",name:"Trap-bar / RDL",sub:"5 × 5 · build the pull",metric:"load",unit:"lb",base:185,step:10,fixed:"× 5 × 5"},
+      {key:"farmer",name:"Farmer's Carry",sub:"50 m · per hand",metric:"load",unit:"lb",base:35,step:5,fixed:"/hand × 50 m"}
+    ],
+    rehab:["Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]},
+  2:{title:"Conditioning & Grip",blurb:"Aerobic capacity and grip stamina.",
+    moves:[
+      {key:"row",name:"500 m Row",sub:"for time · lower is better",metric:"time",unit:"sec",base:130,step:2,lowerBetter:true,fixed:""},
+      {key:"sa_swing",name:"Single-arm KB Swing",sub:"10/side × 3",metric:"load",unit:"lb",base:35,step:4,fixed:"× 10/side × 3"},
+      {key:"ropes",name:"Battle Ropes",sub:"× 5 rounds · per round",metric:"duration",unit:"sec",base:30,step:5,fixed:"× 5 rds"},
+      {key:"sandbag",name:"Sandbag Carry",sub:"20 lb · continuous",metric:"distance",unit:"m",base:300,step:50,fixed:""},
+      {key:"spartan",name:"Spartan Rope Pull",sub:"seated · 10 reps",metric:"load",unit:"lb",base:25,step:5,fixed:"× 10"},
+      {key:"grip",name:"Farmer's Hold",sub:"grip endurance · per set",metric:"duration",unit:"sec",base:30,step:5,fixed:"× 3"}
+    ],
+    rehab:["Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]},
+  3:{title:"Race Sim & Overhead",blurb:"Medley work + shoulder-gated overhead tolerance.",
+    moves:[
+      {key:"medley",name:"Mini-Medley",sub:"Row 250m → 6 flips → 50m sled → 50m farmer",metric:"time",unit:"sec",base:360,step:5,lowerBetter:true,fixed:""},
+      {key:"g2oh",name:"Ground-to-Overhead",sub:"35 lb plate",load:"35 lb",metric:"reps",unit:"reps",base:8,step:2,overhead:true,fixed:""},
+      {key:"oh_lunge",name:"Overhead Lunges",sub:"15 lb bar",load:"15 lb",metric:"distance",unit:"m",base:10,step:5,overhead:true,fixed:""},
+      {key:"oh_carry",name:"Overhead Carry (wade sim)",sub:"25 lb",load:"25 lb",metric:"distance",unit:"m",base:15,step:5,overhead:true,fixed:""},
+      {key:"medball",name:"Med-Ball Toss",sub:"14 lb · over obstacle",load:"14 lb",metric:"reps",unit:"throws",base:8,step:2,fixed:""}
+    ],
+    rehab:["Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]}
+};
+
+function fmtTime(s){if(s==null||isNaN(s))return"—";var m=Math.floor(s/60);var sec=Math.round(s%60);return m+":"+String(sec).padStart(2,"0");}
+function parseTime(str){if(str==null)return NaN;str=String(str).trim();if(str==="")return NaN;
+  if(str.indexOf(":")>=0){var p=str.split(":");return Number(p[0])*60+Number(p[1]);}return Number(str);}
+function fmtTarget(def,value){if(value==null||isNaN(value))return"—";
+  if(def.metric==="time")return fmtTime(value)+(def.fixed?" "+def.fixed:"");
+  return value+" "+def.unit+(def.fixed?" "+def.fixed:"");}
+
+function prescribe(def,last,phaseName){
+  if(!last||last.actual==null||isNaN(last.actual))return{value:def.base,state:"base",reason:"First session — starting point."};
+  var actual=last.actual,rpe=last.rpe,pain=last.pain,prescribed=last.prescribed;
+  if(phaseName==="Taper")return{value:prescribed!=null?prescribed:def.base,state:"taper",reason:"Taper week — holding load, cutting volume."};
+  if(def.overhead&&pain!=null&&pain>0){
+    var back=Math.max(def.base,actual-def.step);
+    return{value:back,state:"backoff",reason:"Shoulder pain "+pain+"/10 last time — backing off. Keep it pain-free; you can penalty-out on race day."};
+  }
+  if(def.lowerBetter){
+    if(rpe>=9)return{value:actual,state:"hold",reason:"RPE "+rpe+" — hold "+fmtTime(actual)+", consolidate."};
+    var nx=Math.max(0,actual-def.step);
+    return{value:nx,state:"progress",reason:fmtTime(actual)+" @ RPE "+rpe+" → chase "+fmtTime(nx)+"."};
+  }
+  var target=prescribed!=null?prescribed:def.base;
+  var hit=actual>=target;
+  if(hit&&rpe<=7)return{value:actual+def.step,state:"progress",reason:actual+" @ RPE "+rpe+" → +"+def.step+"."};
+  if(!hit||rpe>=9)return{value:target,state:"hold",reason:(hit?"":"Missed target · ")+"RPE "+rpe+" — hold at "+target+"."};
+  return{value:target,state:"hold",reason:"RPE 8 — repeat "+target+" to lock it in."};
+}
+
+function lastEntryFor(sessions,day,key){
+  for(var i=sessions.length-1;i>=0;i--){
+    if(sessions[i].day!==day)continue;
+    var e=sessions[i].entries.find(function(x){return x.key===key;});
+    if(e)return e;
+  }
+  return null;
+}
+function stateLabel(s){return{base:"Start",progress:"Progress",hold:"Hold",backoff:"Back off",taper:"Taper"}[s]||s;}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+var state={data:null,tab:"today",draft:{},bw:"",notes:""};
+
+function load(){
+  try{var raw=localStorage.getItem(STORE_KEY);if(raw){state.data=JSON.parse(raw);return;}}catch(e){}
+  state.data={raceDate:DEFAULT_RACE,startDate:DEFAULT_START,sessions:[]};
+}
+function persist(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state.data));}catch(e){toast("Couldn't save to this device's storage.");}}
+
+function toast(msg){var t=document.getElementById("toast");t.className="st-toast";t.textContent=msg;
+  clearTimeout(toast._t);toast._t=setTimeout(function(){t.className="";t.textContent="";},3000);}
+
+function computeToday(){
+  var today=new Date();
+  var race=new Date(state.data.raceDate+"T00:00:00");
+  var start=new Date(state.data.startDate+"T00:00:00");
+  var msDay=86400000;
+  var daysToRace=Math.max(0,Math.ceil((race-today)/msDay));
+  var week=Math.min(15,Math.max(1,Math.floor((today-start)/(7*msDay))+1));
+  var phase=phaseForWeek(week);
+  var sessions=state.data.sessions;
+  var lastS=sessions[sessions.length-1];
+  var nextDay=lastS?(lastS.day%3)+1:1;
+  var plan=PROGRAM[nextDay];
+  var prescriptions=plan.moves.map(function(def){
+    var le=lastEntryFor(sessions,nextDay,def.key);
+    var pr=prescribe(def,le,phase.name);
+    return{def:def,last:le,value:pr.value,pstate:pr.state,reason:pr.reason};
+  });
+  return{daysToRace:daysToRace,week:week,phase:phase,nextDay:nextDay,plan:plan,prescriptions:prescriptions};
+}
+
+/* ---------- render ---------- */
+function render(){
+  var t=computeToday();
+  var html=headerHTML(t)+tabsHTML();
+  if(state.tab==="today")html+=todayHTML(t);
+  else if(state.tab==="history")html+=historyHTML();
+  else if(state.tab==="events")html+=eventsHTML();
+  else if(state.tab==="settings")html+=settingsHTML(t);
+  document.getElementById("app").innerHTML=html;
+  bind(t);
+}
+
+function headerHTML(t){
+  return '<header class="st-head">'+
+    '<div class="st-eyebrow">Samson Challenge · Masters 50+</div>'+
+    '<div class="st-headrow">'+
+      '<div class="st-countdown"><span class="st-cd-num">'+t.daysToRace+'</span><span class="st-cd-lbl">days to race</span></div>'+
+      '<div class="st-phase"><span class="st-chip st-phase-'+t.phase.name.toLowerCase()+'">'+t.phase.name+'</span>'+
+      '<span class="st-week">Week '+t.week+' / 15</span></div>'+
+    '</div><p class="st-phase-note">'+t.phase.note+'</p></header>';
+}
+function tabsHTML(){
+  return '<nav class="st-tabs">'+["today","history","events","settings"].map(function(x){
+    return '<button class="st-tab '+(state.tab===x?"is-active":"")+'" data-tab="'+x+'">'+x+'</button>';
+  }).join("")+'</nav>';
+}
+function todayHTML(t){
+  var overhead=t.prescriptions.some(function(p){return p.pstate==="backoff";});
+  var h='<main class="st-main">';
+  h+='<div class="st-daybar"><div class="st-day-no">Day '+t.nextDay+'</div><div>'+
+     '<div class="st-day-title">'+t.plan.title+'</div><div class="st-day-blurb">'+t.plan.blurb+'</div></div></div>';
+  if(overhead)h+='<div class="st-alert">Shoulder pain was flagged on an overhead movement last time. The plan has backed those off automatically — keep overhead work strictly pain-free, and remember a penalty-out beats an aggravated shoulder on race day.</div>';
+  h+='<div class="st-rehab"><span class="st-rehab-lbl">Rehab primer (do first, fresh)</span><span class="st-rehab-list">'+t.plan.rehab.join(" · ")+'</span></div>';
+  t.prescriptions.forEach(function(p){
+    var def=p.def,d=state.draft[def.key]||{};
+    var rpe=d.rpe!=null?d.rpe:8, pain=d.pain!=null?d.pain:0;
+    h+='<div class="st-move">';
+    h+='<div class="st-move-top"><div><div class="st-move-name">'+def.name+(def.overhead?'<span class="st-oh">overhead</span>':'')+'</div>'+
+       '<div class="st-move-sub">'+(def.load?def.load+' · ':'')+def.sub+'</div></div>'+
+       '<span class="st-state st-'+p.pstate+'">'+stateLabel(p.pstate)+'</span></div>';
+    h+='<div class="st-target"><span class="st-target-lbl">Target</span><span class="st-target-val">'+fmtTarget(def,p.value)+'</span></div>';
+    h+='<div class="st-reason">'+(p.last?'Last: '+fmtTarget(def,p.last.actual)+' @ RPE '+p.last.rpe+(p.last.pain?' · pain '+p.last.pain:'')+' — ':'')+p.reason+'</div>';
+    h+='<div class="st-inputs"><label class="st-field"><span>Actual</span>'+
+       '<input class="st-input" data-actual="'+def.key+'" inputmode="'+(def.metric==="time"?"text":"numeric")+'" placeholder="'+(def.metric==="time"?"m:ss":def.unit)+'" value="'+(d.actual!=null?esc(d.actual):"")+'"></label>';
+    h+='<label class="st-field"><span>RPE</span><div class="st-rpe">'+[6,7,8,9,10].map(function(n){
+       return '<button class="st-pip '+(Number(rpe)===n?"is-on":"")+'" data-rpe="'+def.key+'" data-val="'+n+'">'+n+'</button>';}).join("")+'</div></label></div>';
+    if(def.overhead){
+      h+='<label class="st-field st-painfield"><span>Shoulder pain (0 = none)</span><div class="st-rpe">'+[0,1,2,3,4,5].map(function(n){
+        return '<button class="st-pip st-painpip '+(Number(pain)===n?"is-on-pain":"")+'" data-pain="'+def.key+'" data-val="'+n+'">'+n+'</button>';}).join("")+'</div></label>';
+    }
+    h+='</div>';
+  });
+  h+='<div class="st-sessmeta"><label class="st-field"><span>Bodyweight (optional)</span>'+
+     '<input class="st-input" id="bwInput" inputmode="decimal" placeholder="lb" value="'+esc(state.bw)+'"></label>'+
+     '<label class="st-field st-grow"><span>Session notes</span>'+
+     '<input class="st-input" id="notesInput" placeholder="How did it feel?" value="'+esc(state.notes)+'"></label></div>';
+  h+='<button class="st-log" id="logBtn">Log Day '+t.nextDay+' →</button></main>';
+  return h;
+}
+function historyHTML(){
+  var s=state.data.sessions;
+  if(!s.length)return '<main class="st-main"><div class="st-empty">No sessions yet. Log your first workout and the next one gets prescribed from it.</div></main>';
+  var h='<main class="st-main">';
+  s.slice().reverse().forEach(function(ss){
+    var plan=PROGRAM[ss.day];
+    h+='<details class="st-hist"><summary><span class="st-hist-day">Day '+ss.day+'</span>'+
+       '<span class="st-hist-title">'+plan.title+'</span>'+
+       '<span class="st-hist-date">'+new Date(ss.dateISO).toLocaleDateString(undefined,{month:"short",day:"numeric"})+'</span></summary>'+
+       '<div class="st-hist-body"><div class="st-hist-meta">Week '+ss.week+' · '+ss.phase+(ss.bw?' · '+ss.bw+' lb':'')+'</div>';
+    ss.entries.forEach(function(e){
+      var def=plan.moves.find(function(m){return m.key===e.key;});
+      h+='<div class="st-hist-row"><span>'+(def?def.name:e.key)+'</span><span class="st-hist-val">'+fmtTarget(def,e.actual)+' · RPE '+e.rpe+(e.pain?' · pain '+e.pain:'')+'</span></div>';
+    });
+    if(ss.notes)h+='<div class="st-hist-notes">“'+esc(ss.notes)+'”</div>';
+    h+='<button class="st-del" data-del="'+ss.id+'">Delete session</button></div></details>';
+  });
+  h+='</main>';return h;
+}
+function eventsHTML(){
+  var rows=[["1","Row","500 m"],["2","Tire Flips","171 lb · 10 flips"],["3","Spartan Pull","30 lb · 10 reps"],
+    ["4","Ground-to-Overhead","35 lb · 20 reps"],["5","Sandbag Run","20 lb · 2 laps + net crawls"],["6","Sled Pull","105 lb · 50 m"],
+    ["7","Farmer's Carry","35 lb/hand · 100 m"],["8","Heavy Bag","55 lb · carries + crossings"],
+    ["9","Overhead Lunges","15 lb · 25 m + 25 sit-ups + 25 m"],["10","Med-Ball Toss","14 lb · 10 throws"],
+    ["11","Water Wade","25 lb · overhead, lane + back"]];
+  var h='<main class="st-main"><div class="st-eyebrow2">Race standards · Masters Male 50+</div>';
+  rows.forEach(function(r){h+='<div class="st-evt"><span class="st-evt-no">'+r[0]+'</span><span class="st-evt-name">'+r[1]+'</span><span class="st-evt-spec">'+r[2]+'</span></div>';});
+  h+='<p class="st-fine">~20–40 min continuous, for time. Loads are moderate — it\'s grip endurance and work capacity under fatigue, not a max-strength test.</p></main>';
+  return h;
+}
+function settingsHTML(t){
+  return '<main class="st-main">'+
+    '<label class="st-field"><span>Race date</span><input type="date" class="st-input" id="raceDate" value="'+state.data.raceDate+'"></label>'+
+    '<label class="st-field"><span>Plan start (week 1)</span><input type="date" class="st-input" id="startDate" value="'+state.data.startDate+'"></label>'+
+    '<div class="st-set-info">'+state.data.sessions.length+' session'+(state.data.sessions.length===1?"":"s")+' logged · currently week '+t.week+' ('+t.phase.name+').</div>'+
+    '<div class="st-btnrow"><button class="st-ghost" id="exportBtn">Export backup</button><button class="st-ghost" id="importBtn">Import backup</button></div>'+
+    '<button class="st-reset" id="resetBtn">Reset all sessions</button>'+
+    '<p class="st-fine">To install on your phone: open this page in Safari (iPhone) or Chrome (Android), then Share → Add to Home Screen. Your log is stored on this device — export a backup now and then to keep it safe.</p></main>';
+}
+
+/* ---------- bind ---------- */
+function bind(t){
+  var root=document.getElementById("app");
+  root.querySelectorAll("[data-tab]").forEach(function(b){b.addEventListener("click",function(){state.tab=b.dataset.tab;render();});});
+
+  if(state.tab==="today"){
+    root.querySelectorAll("[data-actual]").forEach(function(inp){
+      inp.addEventListener("input",function(){var k=inp.dataset.actual;state.draft[k]=Object.assign({},state.draft[k],{actual:inp.value});});
+    });
+    root.querySelectorAll("[data-rpe]").forEach(function(btn){
+      btn.addEventListener("click",function(){var k=btn.dataset.rpe;state.draft[k]=Object.assign({},state.draft[k],{rpe:Number(btn.dataset.val)});
+        btn.parentElement.querySelectorAll(".st-pip").forEach(function(p){p.classList.remove("is-on");});btn.classList.add("is-on");});
+    });
+    root.querySelectorAll("[data-pain]").forEach(function(btn){
+      btn.addEventListener("click",function(){var k=btn.dataset.pain;state.draft[k]=Object.assign({},state.draft[k],{pain:Number(btn.dataset.val)});
+        btn.parentElement.querySelectorAll(".st-pip").forEach(function(p){p.classList.remove("is-on-pain");});btn.classList.add("is-on-pain");});
+    });
+    var bw=root.querySelector("#bwInput");if(bw)bw.addEventListener("input",function(){state.bw=bw.value;});
+    var nt=root.querySelector("#notesInput");if(nt)nt.addEventListener("input",function(){state.notes=nt.value;});
+    var lb=root.querySelector("#logBtn");if(lb)lb.addEventListener("click",function(){logSession(t);});
+  }
+  if(state.tab==="history"){
+    root.querySelectorAll("[data-del]").forEach(function(b){b.addEventListener("click",function(){deleteSession(Number(b.dataset.del));});});
+  }
+  if(state.tab==="settings"){
+    var rd=root.querySelector("#raceDate");if(rd)rd.addEventListener("change",function(){state.data.raceDate=rd.value;persist();render();});
+    var sd=root.querySelector("#startDate");if(sd)sd.addEventListener("change",function(){state.data.startDate=sd.value;persist();render();});
+    var rb=root.querySelector("#resetBtn");if(rb)rb.addEventListener("click",resetAll);
+    var eb=root.querySelector("#exportBtn");if(eb)eb.addEventListener("click",exportData);
+    var ib=root.querySelector("#importBtn");if(ib)ib.addEventListener("click",function(){document.getElementById("importFile").click();});
+  }
+}
+
+function logSession(t){
+  var entries=t.prescriptions.map(function(p){
+    var def=p.def,d=state.draft[def.key]||{},actual;
+    if(def.metric==="time")actual=parseTime(d.actual);
+    else actual=(d.actual===""||d.actual==null)?NaN:Number(d.actual);
+    return{key:def.key,prescribed:p.value,actual:isNaN(actual)?null:actual,
+      rpe:d.rpe!=null?Number(d.rpe):8,pain:def.overhead?(d.pain!=null?Number(d.pain):0):null};
+  });
+  var session={id:Date.now(),dateISO:new Date().toISOString(),day:t.nextDay,week:t.week,phase:t.phase.name,
+    bw:state.bw===""?null:Number(state.bw),notes:state.notes.trim(),entries:entries};
+  state.data.sessions.push(session);persist();
+  state.draft={};state.bw="";state.notes="";state.tab="today";render();
+  toast("Day "+t.nextDay+" logged. Next session prescribed.");
+}
+function deleteSession(id){state.data.sessions=state.data.sessions.filter(function(s){return s.id!==id;});persist();render();}
+function resetAll(){if(window.confirm("Erase all logged sessions? This can't be undone.")){state.data.sessions=[];persist();render();}}
+
+function exportData(){
+  var blob=new Blob([JSON.stringify(state.data,null,2)],{type:"application/json"});
+  var url=URL.createObjectURL(blob);var a=document.createElement("a");
+  var d=new Date().toISOString().slice(0,10).replace(/-/g,"");
+  a.href=url;a.download="samson-log-"+d+".json";document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);toast("Backup downloaded.");
+}
+document.getElementById("importFile").addEventListener("change",function(ev){
+  var file=ev.target.files[0];if(!file)return;var r=new FileReader();
+  r.onload=function(){try{var o=JSON.parse(r.result);if(!o||!Array.isArray(o.sessions))throw 0;
+    state.data={raceDate:o.raceDate||DEFAULT_RACE,startDate:o.startDate||DEFAULT_START,sessions:o.sessions};
+    persist();render();toast("Backup restored.");}catch(e){toast("That file didn't look like a Samson backup.");}
+    ev.target.value="";};
+  r.readAsText(file);
+});
+
+/* ---------- boot ---------- */
+load();render();
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
+})();
+</script>
+</body>
+</html>
