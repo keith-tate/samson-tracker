@@ -1,5 +1,5 @@
 /* Samson Tracker service worker — offline-first caching */
-const CACHE = "samson-v1";
+const CACHE = "samson-v2";
 const ASSETS = [
   "./",
   "./index.html",
