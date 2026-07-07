@@ -143,20 +143,20 @@ function phaseForWeek(w){
 var PROGRAM={
   1:{title:"Power & Strength",blurb:"Heavy, low overhead demand.",
     moves:[
-      {key:"tire",name:"Tire Flips",sub:"event tire · quality reps",load:"171 lb",metric:"reps",unit:"flips",base:8,step:1,fixed:""},
-      {key:"kbswing",name:"KB Swing (2-hand)",sub:"× 15 × 3 sets",metric:"load",unit:"lb",base:53,step:8,fixed:"× 15 × 3"},
+      {key:"tire",name:"Tire Flips",sub:"event tire · quality reps",load:"171 lb",metric:"reps",unit:"flips",base:8,step:1,fixed:"",extraLoad:true},
+      {key:"kbswing",name:"KB Swing (2-hand)",sub:"× 15 × 3 sets",metric:"load",unit:"lb",base:55,step:5,fixed:"× 15 × 3"},
       {key:"sled",name:"Heavy Sled Pull",sub:"50 m · hand-over-hand",metric:"load",unit:"lb",base:90,step:10,fixed:"× 50 m"},
       {key:"hinge",name:"Trap-bar / RDL",sub:"5 × 5 · build the pull",metric:"load",unit:"lb",base:185,step:10,fixed:"× 5 × 5"},
       {key:"farmer",name:"Farmer's Carry",sub:"50 m · per hand",metric:"load",unit:"lb",base:35,step:5,fixed:"/hand × 50 m"}
     ],
-    rehab:["Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]},
+    rehab:["Wrist flexor + extensor stretch (10s each)","Wrist circles ×10/way","Light wrist curls + reverse curls ×15","Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]},
   2:{title:"Conditioning & Grip",blurb:"Aerobic capacity and grip stamina.",
     moves:[
       {key:"row",name:"500 m Row",sub:"for time · lower is better",metric:"time",unit:"sec",base:130,step:2,lowerBetter:true,fixed:""},
       {key:"sa_swing",name:"Single-arm KB Swing",sub:"10/side × 3",metric:"load",unit:"lb",base:35,step:4,fixed:"× 10/side × 3"},
       {key:"ropes",name:"Battle Ropes",sub:"× 5 rounds · per round",metric:"duration",unit:"sec",base:30,step:5,fixed:"× 5 rds"},
       {key:"sandbag",name:"Sandbag Carry",sub:"20 lb · continuous",metric:"distance",unit:"m",base:300,step:50,fixed:""},
-      {key:"spartan",name:"Spartan Rope Pull",sub:"seated · 10 reps",metric:"load",unit:"lb",base:25,step:5,fixed:"× 10"},
+      {key:"spartan",name:"Rope Pull (Infinity)",sub:"Infinity rope system · continuous pulls · sub for 30 lb Spartan pull",metric:"reps",unit:"pulls",base:35,step:5,tension:true,fixed:""},
       {key:"grip",name:"Farmer's Hold",sub:"static grip · heaviest you can hold tall",metric:"load",unit:"lb",base:50,step:5,fixed:"/hand · 45s hold × 3"}
     ],
     rehab:["Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]},
@@ -164,9 +164,9 @@ var PROGRAM={
     moves:[
       {key:"medley",name:"Mini-Medley",sub:"Row 250m → 6 flips → 50m sled → 50m farmer",metric:"time",unit:"sec",base:360,step:5,lowerBetter:true,fixed:""},
       {key:"g2oh",name:"Ground-to-Overhead",sub:"35 lb plate",load:"35 lb",metric:"reps",unit:"reps",base:8,step:2,overhead:true,fixed:""},
-      {key:"oh_lunge",name:"Overhead Lunges",sub:"15 lb bar",load:"15 lb",metric:"distance",unit:"m",base:10,step:5,overhead:true,fixed:""},
-      {key:"oh_carry",name:"Overhead Carry (wade sim)",sub:"25 lb",load:"25 lb",metric:"distance",unit:"m",base:15,step:5,overhead:true,fixed:""},
-      {key:"medball",name:"Med-Ball Toss",sub:"14 lb · over obstacle",load:"14 lb",metric:"reps",unit:"throws",base:8,step:2,fixed:""}
+      {key:"oh_lunge",name:"Overhead Lunges",sub:"15 lb overhead · out & back + matching sit-ups",load:"15 lb",metric:"distance",unit:"m",base:10,step:5,cap:25,situps:true,overhead:true,fixed:""},
+      {key:"oh_carry",name:"Overhead Wade (banded)",sub:"25 lb overhead · band vs squat rig · steps/side",load:"25 lb",metric:"reps",unit:"steps/side",base:15,step:5,overhead:true,fixed:""},
+      {key:"medball",name:"Med-Ball Toss",sub:"15 lb train · over obstacle · event 14 lb",load:"15 lb",metric:"reps",unit:"throws",base:8,step:2,fixed:""}
     ],
     rehab:["Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]}
 };
@@ -235,6 +235,7 @@ function computeToday(){
   var prescriptions=plan.moves.map(function(def){
     var le=lastEntryFor(sessions,nextDay,def.key);
     var pr=prescribe(def,le,phase.name);
+    if(def.cap!=null&&pr.value>def.cap){pr.value=def.cap;pr.reason="At event goal ("+def.cap+" "+def.unit+") — hold here.";pr.state=(pr.state==="progress"?"hold":pr.state);}
     return{def:def,last:le,value:pr.value,pstate:pr.state,reason:pr.reason};
   });
   return{daysToRace:daysToRace,week:week,phase:phase,nextDay:nextDay,plan:plan,prescriptions:prescriptions};
@@ -280,10 +281,18 @@ function todayHTML(t){
     h+='<div class="st-move-top"><div><div class="st-move-name">'+def.name+(def.overhead?'<span class="st-oh">overhead</span>':'')+'</div>'+
        '<div class="st-move-sub">'+(def.load?def.load+' · ':'')+def.sub+'</div></div>'+
        '<span class="st-state st-'+p.pstate+'">'+stateLabel(p.pstate)+'</span></div>';
-    h+='<div class="st-target"><span class="st-target-lbl">Target</span><span class="st-target-val">'+fmtTarget(def,p.value)+'</span></div>';
+    h+='<div class="st-target"><span class="st-target-lbl">Target</span><span class="st-target-val">'+fmtTarget(def,p.value)+(def.situps?' + '+p.value+' sit-ups':'')+'</span></div>';
     h+='<div class="st-reason">'+(p.last?'Last: '+fmtTarget(def,p.last.actual)+' @ RPE '+p.last.rpe+(p.last.pain?' · pain '+p.last.pain:'')+' — ':'')+p.reason+'</div>';
     h+='<div class="st-inputs"><label class="st-field"><span>Actual</span>'+
        '<input class="st-input" data-actual="'+def.key+'" inputmode="'+(def.metric==="time"?"text":"numeric")+'" placeholder="'+(def.metric==="time"?"m:ss":def.unit)+'" value="'+(d.actual!=null?esc(d.actual):"")+'"></label>';
+    if(def.extraLoad){
+      h+='<label class="st-field"><span>Added wt</span>'+
+         '<input class="st-input" data-extra="'+def.key+'" inputmode="numeric" placeholder="lb" value="'+(d.extra!=null?esc(d.extra):"")+'"></label>';
+    }
+    if(def.tension){
+      h+='<label class="st-field"><span>Tension</span>'+
+         '<input class="st-input" data-tension="'+def.key+'" inputmode="numeric" placeholder="1–5" value="'+(d.tension!=null?esc(d.tension):"")+'"></label>';
+    }
     h+='<label class="st-field"><span>RPE</span><div class="st-rpe">'+[6,7,8,9,10].map(function(n){
        return '<button class="st-pip '+(Number(rpe)===n?"is-on":"")+'" data-rpe="'+def.key+'" data-val="'+n+'">'+n+'</button>';}).join("")+'</div></label></div>';
     if(def.overhead){
@@ -311,7 +320,7 @@ function historyHTML(){
        '<div class="st-hist-body"><div class="st-hist-meta">Week '+ss.week+' · '+ss.phase+(ss.bw?' · '+ss.bw+' lb':'')+'</div>';
     ss.entries.forEach(function(e){
       var def=plan.moves.find(function(m){return m.key===e.key;});
-      h+='<div class="st-hist-row"><span>'+(def?def.name:e.key)+'</span><span class="st-hist-val">'+fmtTarget(def,e.actual)+' · RPE '+e.rpe+(e.pain?' · pain '+e.pain:'')+'</span></div>';
+      h+='<div class="st-hist-row"><span>'+(def?def.name:e.key)+'</span><span class="st-hist-val">'+fmtTarget(def,e.actual)+((def&&def.situps&&e.actual!=null)?' + '+e.actual+' sit-ups':'')+(e.addedWt?' · +'+e.addedWt+' lb':'')+(e.tension?' · T'+e.tension:'')+' · RPE '+e.rpe+(e.pain?' · pain '+e.pain:'')+'</span></div>';
     });
     if(ss.notes)h+='<div class="st-hist-notes">“'+esc(ss.notes)+'”</div>';
     h+='<button class="st-del" data-del="'+ss.id+'">Delete session</button></div></details>';
@@ -348,6 +357,12 @@ function bind(t){
     root.querySelectorAll("[data-actual]").forEach(function(inp){
       inp.addEventListener("input",function(){var k=inp.dataset.actual;state.draft[k]=Object.assign({},state.draft[k],{actual:inp.value});});
     });
+    root.querySelectorAll("[data-extra]").forEach(function(inp){
+      inp.addEventListener("input",function(){var k=inp.dataset.extra;state.draft[k]=Object.assign({},state.draft[k],{extra:inp.value});});
+    });
+    root.querySelectorAll("[data-tension]").forEach(function(inp){
+      inp.addEventListener("input",function(){var k=inp.dataset.tension;state.draft[k]=Object.assign({},state.draft[k],{tension:inp.value});});
+    });
     root.querySelectorAll("[data-rpe]").forEach(function(btn){
       btn.addEventListener("click",function(){var k=btn.dataset.rpe;state.draft[k]=Object.assign({},state.draft[k],{rpe:Number(btn.dataset.val)});
         btn.parentElement.querySelectorAll(".st-pip").forEach(function(p){p.classList.remove("is-on");});btn.classList.add("is-on");});
@@ -377,8 +392,11 @@ function logSession(t){
     var def=p.def,d=state.draft[def.key]||{},actual;
     if(def.metric==="time")actual=parseTime(d.actual);
     else actual=(d.actual===""||d.actual==null)?NaN:Number(d.actual);
+    var extra=def.extraLoad?((d.extra===""||d.extra==null)?NaN:Number(d.extra)):NaN;
+    var tension=def.tension?((d.tension===""||d.tension==null)?NaN:Number(d.tension)):NaN;
     return{key:def.key,prescribed:p.value,actual:isNaN(actual)?null:actual,
-      rpe:d.rpe!=null?Number(d.rpe):8,pain:def.overhead?(d.pain!=null?Number(d.pain):0):null};
+      rpe:d.rpe!=null?Number(d.rpe):8,pain:def.overhead?(d.pain!=null?Number(d.pain):0):null,
+      addedWt:isNaN(extra)?null:extra,tension:isNaN(tension)?null:tension};
   });
   var session={id:Date.now(),dateISO:new Date().toISOString(),day:t.nextDay,week:t.week,phase:t.phase.name,
     bw:state.bw===""?null:Number(state.bw),notes:state.notes.trim(),entries:entries};
