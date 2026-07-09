@@ -143,17 +143,17 @@ function phaseForWeek(w){
 var PROGRAM={
   1:{title:"Power & Strength",blurb:"Heavy, low overhead demand.",
     moves:[
-      {key:"tire",name:"Tire Flips",sub:"event tire · quality reps",load:"171 lb",metric:"reps",unit:"flips",base:8,step:1,fixed:"",extraLoad:true},
-      {key:"kbswing",name:"KB Swing (2-hand)",sub:"× 15 × 3 sets",metric:"load",unit:"lb",base:55,step:5,fixed:"× 15 × 3"},
-      {key:"sled",name:"Heavy Sled Pull",sub:"50 m · hand-over-hand",metric:"load",unit:"lb",base:90,step:10,fixed:"× 50 m"},
+      {key:"tire",name:"Tire Flips",sub:"event tire · quality reps · 3 sets",load:"171 lb",metric:"reps",unit:"flips",base:8,step:1,fixed:"× 3 sets",extraLoad:true},
+      {key:"kbswing",name:"KB Swing (2-hand)",sub:"× 15 × 3 sets",metric:"load",unit:"lb",base:55,step:5,round:5,fixed:"× 15 × 3"},
+      {key:"sled",name:"Heavy Sled Pull",sub:"50 m · hand-over-hand · 3 rounds",metric:"load",unit:"lb",base:90,step:10,fixed:"× 50 m × 3"},
       {key:"hinge",name:"Trap-bar / RDL",sub:"5 × 5 · build the pull",metric:"load",unit:"lb",base:185,step:10,fixed:"× 5 × 5"},
-      {key:"farmer",name:"Farmer's Carry",sub:"50 m · per hand",metric:"load",unit:"lb",base:35,step:5,fixed:"/hand × 50 m"}
+      {key:"farmer",name:"Farmer's Carry",sub:"50 m · per hand · 3 rounds",metric:"load",unit:"lb",base:35,step:5,fixed:"/hand × 50 m × 3"}
     ],
     rehab:["Wrist flexor + extensor stretch (10s each)","Wrist circles ×10/way","Light wrist curls + reverse curls ×15","Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]},
   2:{title:"Conditioning & Grip",blurb:"Aerobic capacity and grip stamina.",
     moves:[
       {key:"row",name:"500 m Row",sub:"for time · lower is better",metric:"time",unit:"sec",base:130,step:2,lowerBetter:true,fixed:""},
-      {key:"sa_swing",name:"Single-arm KB Swing",sub:"10/side × 3",metric:"load",unit:"lb",base:35,step:4,fixed:"× 10/side × 3"},
+      {key:"sa_swing",name:"Single-arm KB Swing",sub:"10/side × 3",metric:"load",unit:"lb",base:35,step:5,round:5,fixed:"× 10/side × 3"},
       {key:"ropes",name:"Battle Ropes",sub:"× 5 rounds · per round",metric:"duration",unit:"sec",base:30,step:5,fixed:"× 5 rds"},
       {key:"sandbag",name:"Sandbag Carry",sub:"20 lb · continuous",metric:"distance",unit:"m",base:300,step:50,fixed:""},
       {key:"spartan",name:"Rope Pull (Infinity)",sub:"Infinity rope system · continuous pulls · sub for 30 lb Spartan pull",metric:"reps",unit:"pulls",base:35,step:5,tension:true,fixed:""},
@@ -179,21 +179,26 @@ function fmtTarget(def,value){if(value==null||isNaN(value))return"—";
   return value+" "+def.unit+(def.fixed?" "+def.fixed:"");}
 
 function prescribe(def,last,phaseName){
-  if(!last||last.actual==null||isNaN(last.actual))return{value:def.base,state:"base",reason:"First session — starting point."};
+  var rnd=def.round?function(v){return Math.round(v/def.round)*def.round;}:function(v){return v;};
+  if(!last||last.actual==null||isNaN(last.actual))return{value:rnd(def.base),state:"base",reason:"First session — starting point."};
   var actual=last.actual,rpe=last.rpe,pain=last.pain,prescribed=last.prescribed;
-  if(phaseName==="Taper")return{value:prescribed!=null?prescribed:def.base,state:"taper",reason:"Taper week — holding load, cutting volume."};
+  if(phaseName==="Taper")return{value:rnd(prescribed!=null?prescribed:def.base),state:"taper",reason:"Taper week — holding load, cutting volume."};
   if(def.overhead&&pain!=null&&pain>0){
     var back=Math.max(def.base,actual-def.step);
-    return{value:back,state:"backoff",reason:"Shoulder pain "+pain+"/10 last time — backing off. Keep it pain-free; you can penalty-out on race day."};
+    return{value:rnd(back),state:"backoff",reason:"Shoulder pain "+pain+"/10 last time — backing off. Keep it pain-free; you can penalty-out on race day."};
   }
   if(def.lowerBetter){
     if(rpe>=9)return{value:actual,state:"hold",reason:"RPE "+rpe+" — hold "+fmtTime(actual)+", consolidate."};
     var nx=Math.max(0,actual-def.step);
     return{value:nx,state:"progress",reason:fmtTime(actual)+" @ RPE "+rpe+" → chase "+fmtTime(nx)+"."};
   }
-  var target=prescribed!=null?prescribed:def.base;
+  var target=rnd(prescribed!=null?prescribed:def.base);
   var hit=actual>=target;
-  if(hit&&rpe<=7)return{value:actual+def.step,state:"progress",reason:actual+" @ RPE "+rpe+" → +"+def.step+"."};
+  if(hit&&rpe<=7)return{value:rnd(actual+def.step),state:"progress",reason:actual+" @ RPE "+rpe+" → +"+def.step+"."};
+  if(!hit&&actual<target-def.step){
+    var reset=rnd(actual+def.step);
+    return{value:reset,state:"backoff",reason:"Missed hard ("+actual+" vs "+target+" target) — reset to "+reset+" and rebuild from what you actually moved."};
+  }
   if(!hit||rpe>=9)return{value:target,state:"hold",reason:(hit?"":"Missed target · ")+"RPE "+rpe+" — hold at "+target+"."};
   return{value:target,state:"hold",reason:"RPE 8 — repeat "+target+" to lock it in."};
 }
