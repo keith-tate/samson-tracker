@@ -117,6 +117,19 @@ html,body{margin:0;background:var(--bg)}
   font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.1em;font-size:13px;margin-top:8px}
 .st-toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--ember);
   color:var(--ink);padding:11px 18px;border-radius:6px;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:20;max-width:90%;text-align:center}
+.st-rehab-block{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin-bottom:12px}
+.st-rehab-bhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.st-rehab-btitle{font-family:Oswald,sans-serif;font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--clay)}
+.st-rehab-time{font-family:Oswald,sans-serif;font-size:11px;color:var(--faint);letter-spacing:.06em;white-space:nowrap}
+.st-rehab-item{padding:9px 0;border-top:1px solid var(--line)}
+.st-rehab-item:first-of-type{border-top:none}
+.st-rehab-iname{font-size:13.5px;color:var(--ink);font-weight:500;display:flex;align-items:center;gap:8px}
+.st-rehab-ispec{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+.st-rehab-stepper{display:flex;align-items:center;gap:10px;margin-top:9px}
+.st-rehab-stepper button{width:38px;height:34px;border:1px solid var(--steel);background:var(--surface2);color:var(--ink);border-radius:4px;font-size:20px;cursor:pointer;font-family:Oswald,sans-serif;line-height:1}
+.st-rehab-stepper button:active{transform:translateY(1px)}
+.st-rehab-lval{font-family:Oswald,sans-serif;font-weight:700;font-size:15px;color:var(--ember);min-width:70px;text-align:center;font-feature-settings:"tnum"}
+.st-care{font-family:Oswald,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;background:var(--warn-dim);color:#e7a59c;padding:2px 6px;border-radius:2px;font-weight:600}
 @media (prefers-reduced-motion: reduce){*{transition:none !important}}
 </style>
 </head>
@@ -146,10 +159,10 @@ var PROGRAM={
       {key:"tire",name:"Tire Flips",sub:"event tire · quality reps · 3 sets",load:"171 lb",metric:"reps",unit:"flips",base:8,step:1,fixed:"× 3 sets",extraLoad:true},
       {key:"kbswing",name:"KB Swing (2-hand)",sub:"× 15 × 3 sets",metric:"load",unit:"lb",base:55,step:5,round:5,fixed:"× 15 × 3"},
       {key:"sled",name:"Heavy Sled Pull",sub:"50 m · hand-over-hand · 3 rounds",metric:"load",unit:"lb",base:90,step:10,fixed:"× 50 m × 3"},
-      {key:"hinge",name:"Trap-bar / RDL",sub:"5 × 5 · build the pull",metric:"load",unit:"lb",base:185,step:10,fixed:"× 5 × 5"},
+      {key:"hinge",name:"Trap-bar / RDL",sub:"5 × 5 · rebuild after back tweak · neutral spine, ramp slow",metric:"load",unit:"lb",base:95,step:10,fixed:"× 5 × 5"},
       {key:"farmer",name:"Farmer's Carry",sub:"50 m · per hand · 3 rounds",metric:"load",unit:"lb",base:35,step:5,fixed:"/hand × 50 m × 3"}
     ],
-    rehab:["Wrist flexor + extensor stretch (10s each)","Wrist circles ×10/way","Light wrist curls + reverse curls ×15","Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]},
+    rehab:["Cat-cow ×6 + hip 90/90 ×5/side","Glute bridge ×12","Bird-dog ×5/side (10s holds)","Band face pulls ×15","Wall slides ×10","Wrist flexor + extensor stretch + circles"]},
   2:{title:"Conditioning & Grip",blurb:"Aerobic capacity and grip stamina.",
     moves:[
       {key:"row",name:"500 m Row",sub:"for time · lower is better",metric:"time",unit:"sec",base:130,step:2,lowerBetter:true,fixed:""},
@@ -170,6 +183,45 @@ var PROGRAM={
     ],
     rehab:["Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]}
 };
+
+var BANDS=["X-light","Light","Medium","Heavy","X-heavy"];
+var PYRAMIDS=["5-3-1","6-4-2","7-5-3","8-6-4","9-7-5"];
+var REHAB=[
+  {title:"1 · Soft tissue",time:"~4 min",items:[
+    {name:"Levator + upper-trap ball release",spec:"~1.5 min/side · lean into the tender spot, slowly turn head toward the opposite armpit"}
+  ]},
+  {title:"2 · Thoracic mobility",time:"~6 min",items:[
+    {name:"Quadruped T-spine rotation",spec:"2 × 6/side · hips still, elbow to ceiling"},
+    {name:"Open book",spec:"2 × 5/side · keep the down knee planted"},
+    {name:"Cat-cow",spec:"6 slow cycles"},
+    {name:"Banded Pallof press",spec:"2 × 10/side · resisted anti-rotation",load:{type:"band",key:"pallof",def:1}}
+  ]},
+  {title:"3 · Scapular + shoulder stability",time:"~8 min",items:[
+    {name:"Wall slides / floor angels",spec:"2 × 10 · serratus, blades pinned"},
+    {name:"Band pull-aparts",spec:"2 × 15",load:{type:"band",key:"pullapart",def:1}},
+    {name:"Side-lying external rotation",spec:"2 × 15/side",load:{type:"weight",key:"sler",def:5,step:2.5,min:0,unit:"lb"}},
+    {name:"Landmine shoulder press",spec:"2 × 8/side · arc up-and-out, REACH/protract at the top for serratus — don't shrug or tuck",load:{type:"weight",key:"landmine",def:25,step:5,min:0,unit:"lb"}},
+    {name:"Scap-depression hang",spec:"2 × 20–30s"}
+  ]},
+  {title:"4 · Hips · sciatic · piriformis",time:"~10 min",items:[
+    {name:"Supine figure-4 piriformis stretch",spec:"30s × 3/side"},
+    {name:"Banded clamshells",spec:"2 × 15/side · band around the knees",load:{type:"band",key:"clam",def:1}},
+    {name:"Glute bridge → hip thrust",spec:"2 × 15 · squeeze glutes, ribs down",load:{type:"weight",key:"hipthrust",def:45,step:10,min:0,unit:"lb"}},
+    {name:"Sciatic nerve glide (slider)",spec:"10 gentle cycles/side · MUST stay pain-free, never force; skip the seated version if sitting worsens symptoms",warn:true}
+  ]},
+  {title:"5 · McGill Big-3 core",time:"~8 min",items:[
+    {name:"Curl-up",spec:"hands under low back, keep the arch — lift only a few inches"},
+    {name:"Side plank",spec:"per side · straight line shoulder-hip"},
+    {name:"Bird-dog",spec:"per side · kick heel back, hips level"},
+    {name:"Pyramid (all three)",spec:"10s holds · descending reps · not to failure · progress by adding reps",load:{type:"pyramid",key:"pyramid",def:0}}
+  ]},
+  {title:"6 · Finish",time:"~2 min",items:[
+    {name:"Gentle neck ROM",spec:"pain-free rotations + side-bends"},
+    {name:"Walk (bonus)",spec:"10 min daily — great for sciatica"}
+  ]}
+];
+var REHAB_LOADS={};
+REHAB.forEach(function(b){b.items.forEach(function(it){if(it.load)REHAB_LOADS[it.load.key]=it.load;});});
 
 function fmtTime(s){if(s==null||isNaN(s))return"—";var m=Math.floor(s/60);var sec=Math.round(s%60);return m+":"+String(sec).padStart(2,"0");}
 function parseTime(str){if(str==null)return NaN;str=String(str).trim();if(str==="")return NaN;
@@ -217,10 +269,25 @@ function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp
 var state={data:null,tab:"today",draft:{},bw:"",notes:""};
 
 function load(){
-  try{var raw=localStorage.getItem(STORE_KEY);if(raw){state.data=JSON.parse(raw);return;}}catch(e){}
-  state.data={raceDate:DEFAULT_RACE,startDate:DEFAULT_START,sessions:[]};
+  try{var raw=localStorage.getItem(STORE_KEY);if(raw){state.data=JSON.parse(raw);if(!state.data.rehab)state.data.rehab={};return;}}catch(e){}
+  state.data={raceDate:DEFAULT_RACE,startDate:DEFAULT_START,sessions:[],rehab:{}};
 }
 function persist(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state.data));}catch(e){toast("Couldn't save to this device's storage.");}}
+
+function rehabVal(load){var r=state.data.rehab||{};var v=r[load.key];return v==null?load.def:v;}
+function rehabDisplay(load){var v=rehabVal(load);
+  if(load.type==="weight")return v+" "+load.unit;
+  if(load.type==="band")return BANDS[v];
+  return PYRAMIDS[v];}
+function rehabStep(key,dir){
+  var load=REHAB_LOADS[key];if(!load)return;
+  if(!state.data.rehab)state.data.rehab={};
+  var cur=state.data.rehab[key];if(cur==null)cur=load.def;
+  if(load.type==="weight")cur=Math.max(load.min||0,cur+dir*(load.step||5));
+  else if(load.type==="band")cur=Math.min(BANDS.length-1,Math.max(0,cur+dir));
+  else cur=Math.min(PYRAMIDS.length-1,Math.max(0,cur+dir));
+  state.data.rehab[key]=cur;persist();render();
+}
 
 function toast(msg){var t=document.getElementById("toast");t.className="st-toast";t.textContent=msg;
   clearTimeout(toast._t);toast._t=setTimeout(function(){t.className="";t.textContent="";},3000);}
@@ -251,6 +318,7 @@ function render(){
   var t=computeToday();
   var html=headerHTML(t)+tabsHTML();
   if(state.tab==="today")html+=todayHTML(t);
+  else if(state.tab==="rehab")html+=rehabHTML();
   else if(state.tab==="history")html+=historyHTML();
   else if(state.tab==="events")html+=eventsHTML();
   else if(state.tab==="settings")html+=settingsHTML(t);
@@ -268,7 +336,7 @@ function headerHTML(t){
     '</div><p class="st-phase-note">'+t.phase.note+'</p></header>';
 }
 function tabsHTML(){
-  return '<nav class="st-tabs">'+["today","history","events","settings"].map(function(x){
+  return '<nav class="st-tabs">'+["today","rehab","history","events","settings"].map(function(x){
     return '<button class="st-tab '+(state.tab===x?"is-active":"")+'" data-tab="'+x+'">'+x+'</button>';
   }).join("")+'</nav>';
 }
@@ -332,6 +400,27 @@ function historyHTML(){
   });
   h+='</main>';return h;
 }
+function rehabHTML(){
+  var h='<main class="st-main">';
+  h+='<div class="st-eyebrow2">Off-day rehab · ~40 min</div>';
+  h+='<div class="st-alert">Do on your days between training. Everything stays pain-free and neutral-spine — stop anything that shoots or radiates down the leg. Fix upstream first (soft tissue → mobility → stability), then reintroduce neck movement.</div>';
+  REHAB.forEach(function(b){
+    h+='<div class="st-rehab-block"><div class="st-rehab-bhead"><span class="st-rehab-btitle">'+b.title+'</span><span class="st-rehab-time">'+b.time+'</span></div>';
+    b.items.forEach(function(it){
+      h+='<div class="st-rehab-item"><div class="st-rehab-iname">'+esc(it.name)+(it.warn?' <span class="st-care">care</span>':'')+'</div>';
+      h+='<div class="st-rehab-ispec">'+esc(it.spec)+'</div>';
+      if(it.load){
+        h+='<div class="st-rehab-stepper"><button data-rstep="'+it.load.key+'" data-dir="-1">−</button>'+
+           '<span class="st-rehab-lval">'+esc(rehabDisplay(it.load))+'</span>'+
+           '<button data-rstep="'+it.load.key+'" data-dir="1">+</button></div>';
+      }
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+  h+='<p class="st-fine">Loadable moves show a nudge control — bump it up when the current level feels easy (~RPE 6). Your settings save to this device. Mobility, stretch, and soft-tissue items are just the checklist. Educational reference, not medical advice.</p></main>';
+  return h;
+}
 function eventsHTML(){
   var rows=[["1","Row","500 m"],["2","Tire Flips","171 lb · 10 flips"],["3","Spartan Pull","30 lb · 10 reps"],
     ["4","Ground-to-Overhead","35 lb · 20 reps"],["5","Sandbag Run","20 lb · 2 laps + net crawls"],["6","Sled Pull","105 lb · 50 m"],
@@ -380,6 +469,9 @@ function bind(t){
     var nt=root.querySelector("#notesInput");if(nt)nt.addEventListener("input",function(){state.notes=nt.value;});
     var lb=root.querySelector("#logBtn");if(lb)lb.addEventListener("click",function(){logSession(t);});
   }
+  if(state.tab==="rehab"){
+    root.querySelectorAll("[data-rstep]").forEach(function(b){b.addEventListener("click",function(){rehabStep(b.dataset.rstep,Number(b.dataset.dir));});});
+  }
   if(state.tab==="history"){
     root.querySelectorAll("[data-del]").forEach(function(b){b.addEventListener("click",function(){deleteSession(Number(b.dataset.del));});});
   }
@@ -422,7 +514,7 @@ function exportData(){
 document.getElementById("importFile").addEventListener("change",function(ev){
   var file=ev.target.files[0];if(!file)return;var r=new FileReader();
   r.onload=function(){try{var o=JSON.parse(r.result);if(!o||!Array.isArray(o.sessions))throw 0;
-    state.data={raceDate:o.raceDate||DEFAULT_RACE,startDate:o.startDate||DEFAULT_START,sessions:o.sessions};
+    state.data={raceDate:o.raceDate||DEFAULT_RACE,startDate:o.startDate||DEFAULT_START,sessions:o.sessions,rehab:o.rehab||{}};
     persist();render();toast("Backup restored.");}catch(e){toast("That file didn't look like a Samson backup.");}
     ev.target.value="";};
   r.readAsText(file);
