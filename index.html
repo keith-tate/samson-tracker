@@ -130,6 +130,12 @@ html,body{margin:0;background:var(--bg)}
 .st-rehab-stepper button:active{transform:translateY(1px)}
 .st-rehab-lval{font-family:Oswald,sans-serif;font-weight:700;font-size:15px;color:var(--ember);min-width:70px;text-align:center;font-feature-settings:"tnum"}
 .st-care{font-family:Oswald,sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.12em;background:var(--warn-dim);color:#e7a59c;padding:2px 6px;border-radius:2px;font-weight:600}
+.st-medley{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:10px 12px;margin:2px 0 12px}
+.st-medley-lbl{font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.12em;font-size:10px;color:var(--clay);margin-bottom:6px}
+.st-medley-leg{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.st-medley-leg:first-of-type{border-top:none}
+.st-medley-legname{font-size:12.5px;color:var(--ink);display:flex;flex-direction:column;gap:1px}
+.st-medley-legsub{font-size:10.5px;color:var(--faint)}
 @media (prefers-reduced-motion: reduce){*{transition:none !important}}
 </style>
 </head>
@@ -175,11 +181,11 @@ var PROGRAM={
     rehab:["Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]},
   3:{title:"Race Sim & Overhead",blurb:"Medley work + shoulder-gated overhead tolerance.",
     moves:[
-      {key:"medley",name:"Mini-Medley",sub:"Row 250m → 6 flips → 50m sled → 50m farmer",metric:"time",unit:"sec",base:360,step:5,lowerBetter:true,fixed:""},
-      {key:"g2oh",name:"Ground-to-Overhead",sub:"35 lb plate",load:"35 lb",metric:"reps",unit:"reps",base:8,step:2,overhead:true,fixed:""},
+      {key:"medley",name:"Mini-Medley",sub:"Row 250m → 6 flips → 50m sled → 50m farmer",metric:"time",unit:"sec",base:360,step:5,lowerBetter:true,fixed:"",medleyLegs:true},
+      {key:"g2oh",name:"Ground-to-Overhead",sub:"45 lb plate · 3 rounds",load:"45 lb",metric:"reps",unit:"reps",base:8,step:2,overhead:true,fixed:"× 3 rounds"},
       {key:"oh_lunge",name:"Overhead Lunges",sub:"15 lb overhead · out & back + matching sit-ups",load:"15 lb",metric:"distance",unit:"m",base:10,step:5,cap:25,situps:true,overhead:true,fixed:""},
-      {key:"oh_carry",name:"Overhead Wade (banded)",sub:"25 lb overhead · band vs squat rig · steps/side",load:"25 lb",metric:"reps",unit:"steps/side",base:15,step:5,overhead:true,fixed:""},
-      {key:"medball",name:"Med-Ball Toss",sub:"15 lb train · over obstacle · event 14 lb",load:"15 lb",metric:"reps",unit:"throws",base:8,step:2,fixed:""}
+      {key:"oh_carry",name:"Overhead Wade (banded)",sub:"25 lb overhead · band vs squat rig · steps/side · 3 rounds",load:"25 lb",metric:"reps",unit:"steps/side",base:15,step:5,overhead:true,fixed:"× 3 rounds"},
+      {key:"medball",name:"Med-Ball Toss",sub:"15 lb train · over obstacle · event 14 lb · 3 rounds",load:"15 lb",metric:"reps",unit:"throws",base:8,step:2,fixed:"× 3 rounds"}
     ],
     rehab:["Side-lying ext. rotation","Band face pulls","Wall slides","Scap-depression hangs"]}
 };
@@ -222,6 +228,13 @@ var REHAB=[
 ];
 var REHAB_LOADS={};
 REHAB.forEach(function(b){b.items.forEach(function(it){if(it.load)REHAB_LOADS[it.load.key]=it.load;});});
+
+var MEDLEY_LEGS=[
+  {key:"row",label:"Row 250m",sub:"rower resistance / damper",def:5,step:1,min:1,max:10,unit:""},
+  {key:"tire",label:"6 tire flips",sub:"added wt over event tire",def:0,step:5,min:0,unit:"lb"},
+  {key:"sled",label:"50m sled",sub:"total load",def:90,step:10,min:0,unit:"lb"},
+  {key:"farmer",label:"50m farmer",sub:"per hand",def:35,step:5,min:0,unit:"lb"}
+];
 
 function fmtTime(s){if(s==null||isNaN(s))return"—";var m=Math.floor(s/60);var sec=Math.round(s%60);return m+":"+String(sec).padStart(2,"0");}
 function parseTime(str){if(str==null)return NaN;str=String(str).trim();if(str==="")return NaN;
@@ -269,8 +282,8 @@ function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp
 var state={data:null,tab:"today",draft:{},bw:"",notes:""};
 
 function load(){
-  try{var raw=localStorage.getItem(STORE_KEY);if(raw){state.data=JSON.parse(raw);if(!state.data.rehab)state.data.rehab={};return;}}catch(e){}
-  state.data={raceDate:DEFAULT_RACE,startDate:DEFAULT_START,sessions:[],rehab:{}};
+  try{var raw=localStorage.getItem(STORE_KEY);if(raw){state.data=JSON.parse(raw);if(!state.data.rehab)state.data.rehab={};if(!state.data.medley)state.data.medley={};return;}}catch(e){}
+  state.data={raceDate:DEFAULT_RACE,startDate:DEFAULT_START,sessions:[],rehab:{},medley:{}};
 }
 function persist(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state.data));}catch(e){toast("Couldn't save to this device's storage.");}}
 
@@ -287,6 +300,19 @@ function rehabStep(key,dir){
   else if(load.type==="band")cur=Math.min(BANDS.length-1,Math.max(0,cur+dir));
   else cur=Math.min(PYRAMIDS.length-1,Math.max(0,cur+dir));
   state.data.rehab[key]=cur;persist();render();
+}
+
+function medleyLeg(key){for(var i=0;i<MEDLEY_LEGS.length;i++)if(MEDLEY_LEGS[i].key===key)return MEDLEY_LEGS[i];return null;}
+function medleyVal(leg){var m=state.data.medley||{};var v=m[leg.key];return v==null?leg.def:v;}
+function medleyDisplay(leg){var v=medleyVal(leg);return v+(leg.unit?" "+leg.unit:"");}
+function medleyStep(key,dir){
+  var leg=medleyLeg(key);if(!leg)return;
+  if(!state.data.medley)state.data.medley={};
+  var cur=state.data.medley[key];if(cur==null)cur=leg.def;
+  cur=cur+dir*leg.step;
+  if(leg.min!=null&&cur<leg.min)cur=leg.min;
+  if(leg.max!=null&&cur>leg.max)cur=leg.max;
+  state.data.medley[key]=cur;persist();render();
 }
 
 function toast(msg){var t=document.getElementById("toast");t.className="st-toast";t.textContent=msg;
@@ -356,6 +382,16 @@ function todayHTML(t){
        '<span class="st-state st-'+p.pstate+'">'+stateLabel(p.pstate)+'</span></div>';
     h+='<div class="st-target"><span class="st-target-lbl">Target</span><span class="st-target-val">'+fmtTarget(def,p.value)+(def.situps?' + '+p.value+' sit-ups':'')+'</span></div>';
     h+='<div class="st-reason">'+(p.last?'Last: '+fmtTarget(def,p.last.actual)+' @ RPE '+p.last.rpe+(p.last.pain?' · pain '+p.last.pain:'')+' — ':'')+p.reason+'</div>';
+    if(def.medleyLegs){
+      h+='<div class="st-medley"><div class="st-medley-lbl">Medley legs — set your loads</div>';
+      MEDLEY_LEGS.forEach(function(leg){
+        h+='<div class="st-medley-leg"><div class="st-medley-legname">'+esc(leg.label)+'<span class="st-medley-legsub">'+esc(leg.sub)+'</span></div>'+
+           '<div class="st-rehab-stepper"><button data-mstep="'+leg.key+'" data-dir="-1">−</button>'+
+           '<span class="st-rehab-lval">'+esc(medleyDisplay(leg))+'</span>'+
+           '<button data-mstep="'+leg.key+'" data-dir="1">+</button></div></div>';
+      });
+      h+='</div>';
+    }
     h+='<div class="st-inputs"><label class="st-field"><span>Actual</span>'+
        '<input class="st-input" data-actual="'+def.key+'" inputmode="'+(def.metric==="time"?"text":"numeric")+'" placeholder="'+(def.metric==="time"?"m:ss":def.unit)+'" value="'+(d.actual!=null?esc(d.actual):"")+'"></label>';
     if(def.extraLoad){
@@ -457,6 +493,7 @@ function bind(t){
     root.querySelectorAll("[data-tension]").forEach(function(inp){
       inp.addEventListener("input",function(){var k=inp.dataset.tension;state.draft[k]=Object.assign({},state.draft[k],{tension:inp.value});});
     });
+    root.querySelectorAll("[data-mstep]").forEach(function(b){b.addEventListener("click",function(){medleyStep(b.dataset.mstep,Number(b.dataset.dir));});});
     root.querySelectorAll("[data-rpe]").forEach(function(btn){
       btn.addEventListener("click",function(){var k=btn.dataset.rpe;state.draft[k]=Object.assign({},state.draft[k],{rpe:Number(btn.dataset.val)});
         btn.parentElement.querySelectorAll(".st-pip").forEach(function(p){p.classList.remove("is-on");});btn.classList.add("is-on");});
@@ -514,7 +551,7 @@ function exportData(){
 document.getElementById("importFile").addEventListener("change",function(ev){
   var file=ev.target.files[0];if(!file)return;var r=new FileReader();
   r.onload=function(){try{var o=JSON.parse(r.result);if(!o||!Array.isArray(o.sessions))throw 0;
-    state.data={raceDate:o.raceDate||DEFAULT_RACE,startDate:o.startDate||DEFAULT_START,sessions:o.sessions,rehab:o.rehab||{}};
+    state.data={raceDate:o.raceDate||DEFAULT_RACE,startDate:o.startDate||DEFAULT_START,sessions:o.sessions,rehab:o.rehab||{},medley:o.medley||{}};
     persist();render();toast("Backup restored.");}catch(e){toast("That file didn't look like a Samson backup.");}
     ev.target.value="";};
   r.readAsText(file);
