@@ -160,21 +160,21 @@ function phaseForWeek(w){
 }
 
 var PROGRAM={
-  1:{title:"Power & Strength",blurb:"Heavy, low overhead demand.",
+  1:{title:"Strength & Lunge",blurb:"Hip-hinge strength + loaded lunges.",
     moves:[
       {key:"tire",name:"Tire Flips",sub:"event tire · quality reps · 3 sets",load:"171 lb",metric:"reps",unit:"flips",base:8,step:1,fixed:"× 3 sets",extraLoad:true},
       {key:"kbswing",name:"KB Swing (2-hand)",sub:"× 15 × 3 sets",metric:"load",unit:"lb",base:55,step:5,round:5,fixed:"× 15 × 3"},
-      {key:"sled",name:"Heavy Sled Pull",sub:"50 m · hand-over-hand · 3 rounds",metric:"load",unit:"lb",base:90,step:10,fixed:"× 50 m × 3"},
       {key:"hinge",name:"Trap-bar / RDL",sub:"5 × 5 · rebuild after back tweak · neutral spine, ramp slow",metric:"load",unit:"lb",base:95,step:10,fixed:"× 5 × 5"},
+      {key:"revlunge",name:"Reverse Lunges (loaded)",sub:"back-friendly strength lunge · DBs · 8/leg × 3",metric:"load",unit:"lb",base:15,step:5,round:5,fixed:"/hand × 8/leg × 3"},
       {key:"farmer",name:"Farmer's Carry",sub:"50 m · per hand · 3 rounds",metric:"load",unit:"lb",base:35,step:5,fixed:"/hand × 50 m × 3"}
     ],
     rehab:["Cat-cow ×6 + hip 90/90 ×5/side","Glute bridge ×12","Bird-dog ×5/side (10s holds)","Band face pulls ×15","Wall slides ×10","Wrist flexor + extensor stretch + circles"]},
-  2:{title:"Conditioning & Grip",blurb:"Aerobic capacity and grip stamina.",
+  2:{title:"Conditioning & The Run",blurb:"Engine day + the timed sandbag run.",
     moves:[
       {key:"row",name:"500 m Row",sub:"for time · lower is better",metric:"time",unit:"sec",base:130,step:2,lowerBetter:true,fixed:"",setting:{key:"rowdamper",label:"Rower resistance / damper",def:5,step:1,min:1,max:10,unit:"",hist:"damper"}},
-      {key:"sa_swing",name:"Single-arm KB Swing",sub:"10/side × 3",metric:"load",unit:"lb",base:35,step:5,round:5,fixed:"× 10/side × 3"},
+      {key:"sandbag",name:"Sandbag Run",sub:"20 lb · 2 laps ≈ 500m · army-net crawl each lap · for time",metric:"time",unit:"sec",base:210,step:5,lowerBetter:true,fixed:""},
+      {key:"sled",name:"Heavy Sled Pull",sub:"50 m · hand-over-hand · 3 rounds",metric:"load",unit:"lb",base:90,step:10,fixed:"× 50 m × 3"},
       {key:"ropes",name:"Battle Ropes",sub:"× 5 rounds · per round",metric:"duration",unit:"sec",base:30,step:5,fixed:"× 5 rds"},
-      {key:"sandbag",name:"Sandbag Carry",sub:"20 lb · continuous",metric:"distance",unit:"m",base:300,step:50,fixed:""},
       {key:"spartan",name:"Rope Pull (Infinity)",sub:"Infinity rope system · continuous pulls · sub for 30 lb Spartan pull · 3 rounds",metric:"reps",unit:"pulls",base:35,step:5,tension:true,fixed:"× 3 rounds"},
       {key:"grip",name:"Farmer's Hold",sub:"static grip · heaviest you can hold tall",metric:"load",unit:"lb",base:50,step:5,fixed:"/hand · 45s hold × 3"}
     ],
